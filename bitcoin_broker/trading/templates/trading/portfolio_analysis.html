@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Portfolio Analysis - Nexus Broker{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Performance Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Total Return</h3>
+            <p class="text-3xl font-bold {% if metrics.total_return >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                {{ metrics.total_return|floatformat:2 }}%
+            </p>
+            <p class="text-sm text-gray-500">All-time return</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Sharpe Ratio</h3>
+            <p class="text-3xl font-bold text-blue-600">{{ metrics.sharpe_ratio|floatformat:2 }}</p>
+            <p class="text-sm text-gray-500">Risk-adjusted return</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Max Drawdown</h3>
+            <p class="text-3xl font-bold text-red-600">{{ metrics.max_drawdown|floatformat:2 }}%</p>
+            <p class="text-sm text-gray-500">Largest decline</p>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-2">Beta</h3>
+            <p class="text-3xl font-bold text-blue-600">{{ metrics.beta|floatformat:2 }}</p>
+            <p class="text-sm text-gray-500">Market correlation</p>
+        </div>
+    </div>
+
+    <!-- Performance Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Portfolio Value Over Time</h3>
+            <div id="portfolio-value-chart" class="h-80"></div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Asset Allocation</h3>
+            <div id="asset-allocation-chart" class="h-80"></div>
+        </div>
+    </div>
+
+    <!-- Risk Analysis -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Risk Metrics</h3>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Value at Risk (95%)</p>
+                        <p class="text-xl font-semibold">${{ metrics.var_95|floatformat:2 }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Expected Shortfall</p>
+                        <p class="text-xl font-semibold">${{ metrics.expected_shortfall|floatformat:2 }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Volatility</p>
+                        <p class="text-xl font-semibold">{{ metrics.volatility|floatformat:2 }}%</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Sortino Ratio</p>
+                        <p class="text-xl font-semibold">{{ metrics.sortino_ratio|floatformat:2 }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Asset Correlation Matrix</h3>
+            <div id="correlation-heatmap" class="h-80"></div>
+        </div>
+    </div>
+
+    <!-- Historical Performance -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h3 class="text-lg font-semibold mb-4">Historical Returns</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Return</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Benchmark</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alpha</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for period in historical_returns %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ period.name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm {% if period.return >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {{ period.return|floatformat:2 }}%
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm {% if period.benchmark >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {{ period.benchmark|floatformat:2 }}%
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm {% if period.alpha >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {{ period.alpha|floatformat:2 }}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+<script>
+    // Portfolio Value Chart
+    fetch("{% url 'trading:get_portfolio_chart_data' %}")
+        .then(response => response.json())
+        .then(data => {
+            const options = {
+                series: [{
+                    name: 'Portfolio Value',
+                    data: data.values
+                }],
+                chart: {
+                    type: 'area',
+                    height: 320,
+                    toolbar: {
+                        show: false
+                    }
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth'
+                },
+                xaxis: {
+                    type: 'datetime',
+                    categories: data.dates
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function (value) {
+                            return '$' + value.toFixed(2)
+                        }
+                    }
+                },
+                tooltip: {
+                    x: {
+                        format: 'dd MMM yyyy'
+                    }
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.9,
+                        stops: [0, 100]
+                    }
+                }
+            };
+
+            const chart = new ApexCharts(document.querySelector("#portfolio-value-chart"), options);
+            chart.render();
+        });
+
+    // Asset Allocation Chart
+    fetch("{% url 'trading:get_allocation_data' %}")
+        .then(response => response.json())
+        .then(data => {
+            const allocationOptions = {
+                series: data.values,
+                chart: {
+                    type: 'donut',
+                    height: 320
+                },
+                labels: data.labels,
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: {
+                            width: 200
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }],
+                tooltip: {
+                    y: {
+                        formatter: function(value) {
+                            return value.toFixed(2) + '%';
+                        }
+                    }
+                }
+            };
+
+            const chart = new ApexCharts(document.querySelector("#asset-allocation-chart"), allocationOptions);
+            chart.render();
+        });
+
+    // Correlation Heatmap
+    fetch("{% url 'trading:get_correlation_data' %}")
+        .then(response => response.json())
+        .then(data => {
+            const options = {
+                series: data.correlations,
+                chart: {
+                    height: 320,
+                    type: 'heatmap'
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: function(val) {
+                        return val.toFixed(2);
+                    }
+                },
+                colors: ["#008FFB"],
+                title: {
+                    text: 'Asset Correlation Matrix'
+                },
+                xaxis: {
+                    categories: data.assets
+                },
+                yaxis: {
+                    categories: data.assets
+                }
+            };
+
+            const chart = new ApexCharts(document.querySelector("#correlation-heatmap"), options);
+            chart.render();
+        });
+</script>
+{% endblock %}

@@ -1,0 +1,315 @@
+{% extends 'base.html' %} {% load static %} {% block title %}Risk Assessment -
+Nexus Broker{% endblock %} {% block extra_css %}
+<link
+  href="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.css"
+  rel="stylesheet"
+/>
+{% endblock %} {% block content %}
+<div class="container mx-auto px-4 py-8">
+  <!-- Risk Score -->
+  <div class="bg-white rounded-lg shadow p-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div>
+        <h3 class="text-lg font-semibold mb-4">Portfolio Risk Score</h3>
+        <div class="flex items-center space-x-4">
+          <div class="w-32 h-32 relative">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <span class="text-4xl font-bold">{{ risk_score|default:0 }}</span>
+            </div>
+            <canvas id="risk-gauge" width="128" height="128"></canvas>
+          </div>
+          <div>
+            <p class="text-lg font-medium mb-2">
+              {% with score=risk_score|default:0 %} {% if score < 30 %}
+              Conservative {% elif score < 50 %} Moderate-Conservative {% elif
+              score < 70 %} Moderate {% elif score < 85 %} Moderate-Aggressive
+              {% else %} Aggressive {% endif %} {% endwith %}
+            </p>
+            <p class="text-sm text-gray-600">
+              Based on your current portfolio composition and market conditions
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <h3 class="text-lg font-semibold">Risk Factors</h3>
+        {% for factor in risk_factors %}
+        <div>
+          <div class="flex justify-between mb-1">
+            <span class="text-sm font-medium">{{ factor.name }}</span>
+            <span class="text-sm text-gray-500"
+              >{{ factor.score|default:0 }}/100</span
+            >
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div
+              class="bg-blue-600 h-2 rounded-full"
+              style="--width: {{ factor.score|default:0 }}%; width: var(--width);"
+            ></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk Metrics -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Value at Risk (VaR)</h3>
+      <div class="space-y-4">
+        <div>
+          <p class="text-sm text-gray-500">95% Confidence</p>
+          <p class="text-2xl font-bold text-red-600">
+            ${{ metrics.var_95|floatformat:2 }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">99% Confidence</p>
+          <p class="text-2xl font-bold text-red-600">
+            ${{ metrics.var_99|floatformat:2 }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Stress Test</h3>
+      <div class="space-y-4">
+        <div>
+          <p class="text-sm text-gray-500">Market Crash (-30%)</p>
+          <p class="text-2xl font-bold text-red-600">
+            ${{ metrics.stress_market_crash|floatformat:2 }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">High Volatility</p>
+          <p class="text-2xl font-bold text-red-600">
+            ${{ metrics.stress_high_volatility|floatformat:2 }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Portfolio Metrics</h3>
+      <div class="space-y-4">
+        <div>
+          <p class="text-sm text-gray-500">Beta</p>
+          <p class="text-2xl font-bold">{{ metrics.beta|floatformat:2 }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Sharpe Ratio</p>
+          <p class="text-2xl font-bold">
+            {{ metrics.sharpe_ratio|floatformat:2 }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk Analysis -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Concentration Risk</h3>
+      <div id="concentration-chart" class="h-80"></div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold mb-4">Historical Drawdown</h3>
+      <div id="drawdown-chart" class="h-80"></div>
+    </div>
+  </div>
+
+  <!-- Risk Recommendations -->
+  <div class="bg-white rounded-lg shadow p-6">
+    <h3 class="text-lg font-semibold mb-4">Risk Management Recommendations</h3>
+    <div class="space-y-6">
+      {% for recommendation in recommendations %}
+      <div class="flex items-start space-x-4">
+        <div class="flex-shrink-0">
+          <span
+            class="inline-flex items-center justify-center h-8 w-8 rounded-full {% if recommendation.priority == 'high' %}bg-red-100 text-red-500{% elif recommendation.priority == 'medium' %}bg-yellow-100 text-yellow-500{% else %}bg-green-100 text-green-500{% endif %}"
+          >
+            <i class="fas fa-{{ recommendation.icon }}"></i>
+          </span>
+        </div>
+        <div>
+          <h4 class="text-lg font-medium">{{ recommendation.title }}</h4>
+          <p class="text-gray-600">{{ recommendation.description }}</p>
+          {% if recommendation.action %}
+          <a
+            href="{{ recommendation.action_url }}"
+            class="inline-flex items-center mt-2 text-blue-600 hover:text-blue-500"
+          >
+            {{ recommendation.action }}
+            <i class="fas fa-arrow-right ml-2"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+<script>
+  // Risk Gauge
+  const canvas = document.getElementById("risk-gauge");
+  const ctx = canvas.getContext("2d");
+  const riskScore = Number("{{ risk_score|default:0 }}");
+
+  function drawGauge() {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 10;
+
+    // Draw background arc
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, Math.PI, 2 * Math.PI, false);
+    ctx.lineWidth = 10;
+    ctx.strokeStyle = "#e5e7eb";
+    ctx.stroke();
+
+    // Draw score arc
+    const scoreRatio = riskScore / 100;
+    ctx.beginPath();
+    ctx.arc(
+      centerX,
+      centerY,
+      radius,
+      Math.PI,
+      Math.PI + Math.PI * scoreRatio,
+      false
+    );
+    ctx.lineWidth = 10;
+
+    // Color gradient based on risk score
+    let color = "#10B981";
+    if (riskScore >= 85) {
+      color = "#EF4444";
+    } else if (riskScore >= 70) {
+      color = "#F97316";
+    } else if (riskScore >= 50) {
+      color = "#F59E0B";
+    } else if (riskScore >= 30) {
+      color = "#3B82F6";
+    }
+
+    ctx.strokeStyle = color;
+    ctx.stroke();
+  }
+
+  drawGauge();
+
+  // Concentration Chart
+  fetch("{% url 'trading:get_concentration_data' %}")
+    .then((response) => response.json())
+    .then((data) => {
+      const options = {
+        series: [
+          {
+            name: "Allocation",
+            data: data.values,
+          },
+        ],
+        chart: {
+          type: "bar",
+          height: 320,
+          toolbar: {
+            show: false,
+          },
+        },
+        plotOptions: {
+          bar: {
+            borderRadius: 4,
+            horizontal: true,
+          },
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        xaxis: {
+          categories: data.assets,
+        },
+        yaxis: {
+          labels: {
+            formatter: function (value) {
+              return value.toFixed(2) + "%";
+            },
+          },
+        },
+        tooltip: {
+          y: {
+            formatter: function (value) {
+              return value.toFixed(2) + "%";
+            },
+          },
+        },
+      };
+
+      const chart = new ApexCharts(
+        document.querySelector("#concentration-chart"),
+        options
+      );
+      chart.render();
+    });
+
+  // Drawdown Chart
+  fetch("{% url 'trading:get_drawdown_data' %}")
+    .then((response) => response.json())
+    .then((data) => {
+      const options = {
+        series: [
+          {
+            name: "Drawdown",
+            data: data.values,
+          },
+        ],
+        chart: {
+          type: "area",
+          height: 320,
+          toolbar: {
+            show: false,
+          },
+        },
+        dataLabels: {
+          enabled: false,
+        },
+        stroke: {
+          curve: "smooth",
+          width: 2,
+        },
+        xaxis: {
+          type: "datetime",
+          categories: data.dates,
+        },
+        yaxis: {
+          labels: {
+            formatter: function (value) {
+              return value.toFixed(2) + "%";
+            },
+          },
+        },
+        fill: {
+          type: "gradient",
+          gradient: {
+            shadeIntensity: 1,
+            opacityFrom: 0.7,
+            opacityTo: 0.9,
+            stops: [0, 90, 100],
+          },
+        },
+        colors: ["#EF4444"],
+      };
+
+      const chart = new ApexCharts(
+        document.querySelector("#drawdown-chart"),
+        options
+      );
+      chart.render();
+    });
+</script>
+{% endblock %}

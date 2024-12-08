@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Entry - Nexus Broker{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Order Entry Form -->
+        <div class="relative overflow-hidden p-8 rounded-2xl bg-gradient-to-br from-bitcoin/20 to-purple-600/20 backdrop-blur-sm border border-gray-700/50 max-w-2xl mx-auto">
+            <div class="absolute inset-0 bg-gradient-to-br from-bitcoin to-purple-600 opacity-10"></div>
+            <div class="relative z-10">
+                <h1 class="text-3xl font-bold text-white mb-8">Place Order</h1>
+                
+                <form method="post" action="{% url 'trading:order_confirmation' %}" class="space-y-6" id="orderForm">
+                    {% csrf_token %}
+                    
+                    <!-- Trading Pair Selection -->
+                    <div>
+                        <label for="trading_pair" class="block text-sm font-medium text-gray-300">Trading Pair</label>
+                        <select id="trading_pair" name="trading_pair" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-700 focus:outline-none focus:ring-bitcoin focus:border-bitcoin rounded-md bg-gray-800 text-white">
+                            <!-- Major Pairs -->
+                            <optgroup label="Major Pairs">
+                                <option value="BTC/USD">BTC/USD - Bitcoin</option>
+                                <option value="ETH/USD">ETH/USD - Ethereum</option>
+                                <option value="BNB/USD">BNB/USD - Binance Coin</option>
+                                <option value="SOL/USD">SOL/USD - Solana</option>
+                                <option value="XRP/USD">XRP/USD - Ripple</option>
+                                <option value="ADA/USD">ADA/USD - Cardano</option>
+                                <option value="DOGE/USD">DOGE/USD - Dogecoin</option>
+                                <option value="DOT/USD">DOT/USD - Polkadot</option>
+                            </optgroup>
+                            
+                            <!-- DeFi Tokens -->
+                            <optgroup label="DeFi Tokens">
+                                <option value="UNI/USD">UNI/USD - Uniswap</option>
+                                <option value="LINK/USD">LINK/USD - Chainlink</option>
+                                <option value="AAVE/USD">AAVE/USD - Aave</option>
+                                <option value="CAKE/USD">CAKE/USD - PancakeSwap</option>
+                                <option value="SUSHI/USD">SUSHI/USD - SushiSwap</option>
+                                <option value="CRV/USD">CRV/USD - Curve DAO</option>
+                            </optgroup>
+                        
+                            <!-- Layer 2 Solutions -->
+                            <optgroup label="Layer 2 & Scaling">
+                                <option value="MATIC/USD">MATIC/USD - Polygon</option>
+                                <option value="AVAX/USD">AVAX/USD - Avalanche</option>
+                                <option value="ALGO/USD">ALGO/USD - Algorand</option>
+                                <option value="FTM/USD">FTM/USD - Fantom</option>
+                                <option value="ONE/USD">ONE/USD - Harmony</option>
+                            </optgroup>
+                        
+                            <!-- Metaverse & Gaming -->
+                            <optgroup label="Metaverse & Gaming">
+                                <option value="SAND/USD">SAND/USD - The Sandbox</option>
+                                <option value="MANA/USD">MANA/USD - Decentraland</option>
+                                <option value="AXS/USD">AXS/USD - Axie Infinity</option>
+                                <option value="ENJ/USD">ENJ/USD - Enjin Coin</option>
+                                <option value="GALA/USD">GALA/USD - Gala Games</option>
+                            </optgroup>
+                        
+                            <!-- Stablecoins -->
+                            <optgroup label="Stablecoins">
+                                <option value="USDT/USD">USDT/USD - Tether</option>
+                                <option value="USDC/USD">USDC/USD - USD Coin</option>
+                                <option value="DAI/USD">DAI/USD - Dai</option>
+                                <option value="BUSD/USD">BUSD/USD - Binance USD</option>
+                            </optgroup>
+                        
+                            <!-- Exchange Tokens -->
+                            <optgroup label="Exchange Tokens">
+                                <option value="CRO/USD">CRO/USD - Crypto.com Coin</option>
+                                <option value="FTT/USD">FTT/USD - FTX Token</option>
+                                <option value="KCS/USD">KCS/USD - KuCoin Token</option>
+                                <option value="HT/USD">HT/USD - Huobi Token</option>
+                            </optgroup>
+                        
+                            <!-- BTC Trading Pairs -->
+                            <optgroup label="BTC Trading Pairs">
+                                <option value="ETH/BTC">ETH/BTC - Ethereum</option>
+                                <option value="BNB/BTC">BNB/BTC - Binance Coin</option>
+                                <option value="SOL/BTC">SOL/BTC - Solana</option>
+                                <option value="XRP/BTC">XRP/BTC - Ripple</option>
+                                <option value="ADA/BTC">ADA/BTC - Cardano</option>
+                            </optgroup>
+                        
+                            <!-- ETH Trading Pairs -->
+                            <optgroup label="ETH Trading Pairs">
+                                <option value="LINK/ETH">LINK/ETH - Chainlink</option>
+                                <option value="UNI/ETH">UNI/ETH - Uniswap</option>
+                                <option value="AAVE/ETH">AAVE/ETH - Aave</option>
+                                <option value="MATIC/ETH">MATIC/ETH - Polygon</option>
+                                <option value="SNX/ETH">SNX/ETH - Synthetix</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Order Type -->
+                    <div>
+                        <label for="order_type" class="block text-sm font-medium text-gray-300">Order Type</label>
+                        <select id="order_type" name="order_type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-700 focus:outline-none focus:ring-bitcoin focus:border-bitcoin rounded-md bg-gray-800 text-white">
+                            <option value="market">Market Order</option>
+                            <option value="limit">Limit Order</option>
+                            <option value="stop">Stop Order</option>
+                        </select>
+                    </div>
+
+                    <!-- Side Selection -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <button type="button" id="buyBtn" class="w-full px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Buy
+                        </button>
+                        <button type="button" id="sellBtn" class="w-full px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Sell
+                        </button>
+                        <input type="hidden" name="side" id="side" value="">
+                    </div>
+
+                    <!-- Amount -->
+                    <div>
+                        <label for="amount" class="block text-sm font-medium text-gray-300">Amount</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" name="amount" id="amount" step="0.00000001" class="block w-full pl-3 pr-12 py-2 text-base border-gray-700 focus:outline-none focus:ring-bitcoin focus:border-bitcoin rounded-md bg-gray-800 text-white" placeholder="0.00000000">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-400 sm:text-sm" id="currency">BTC</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price (for limit orders) -->
+                    <div id="priceField" class="hidden">
+                        <label for="price" class="block text-sm font-medium text-gray-300">Price</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" name="price" id="price" step="0.01" class="block w-full pl-3 pr-12 py-2 text-base border-gray-700 focus:outline-none focus:ring-bitcoin focus:border-bitcoin rounded-md bg-gray-800 text-white" placeholder="0.00">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-400 sm:text-sm">USD</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button type="submit" class="w-full px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-bitcoin hover:bg-bitcoin/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-bitcoin transform transition-all duration-300 hover:scale-105">
+                            Review Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Market Information -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <!-- Order Book -->
+            <div class="relative overflow-hidden p-6 rounded-2xl bg-gradient-to-br from-bitcoin/20 to-purple-600/20 backdrop-blur-sm border border-gray-700/50">
+                <div class="absolute inset-0 bg-gradient-to-br from-bitcoin to-purple-600 opacity-10"></div>
+                <div class="relative z-10">
+                    <h2 class="text-xl font-bold text-white mb-4">Order Book</h2>
+                    <div class="space-y-2">
+                        <!-- Order book content will be populated by JavaScript -->
+                        <div id="orderBook" class="text-sm text-gray-300">
+                            Loading order book...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Trades -->
+            <div class="relative overflow-hidden p-6 rounded-2xl bg-gradient-to-br from-bitcoin/20 to-purple-600/20 backdrop-blur-sm border border-gray-700/50">
+                <div class="absolute inset-0 bg-gradient-to-br from-bitcoin to-purple-600 opacity-10"></div>
+                <div class="relative z-10">
+                    <h2 class="text-xl font-bold text-white mb-4">Recent Trades</h2>
+                    <div class="space-y-2">
+                        <!-- Recent trades will be populated by JavaScript -->
+                        <div id="recentTrades" class="text-sm text-gray-300">
+                            Loading recent trades...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const orderForm = document.getElementById('orderForm');
+    const orderTypeSelect = document.getElementById('order_type');
+    const priceField = document.getElementById('priceField');
+    const buyBtn = document.getElementById('buyBtn');
+    const sellBtn = document.getElementById('sellBtn');
+    const sideInput = document.getElementById('side');
+    const tradingPairSelect = document.getElementById('trading_pair');
+    const currencySpan = document.getElementById('currency');
+
+    // Show/hide price field based on order type
+    orderTypeSelect.addEventListener('change', function() {
+        if (this.value === 'market') {
+            priceField.classList.add('hidden');
+        } else {
+            priceField.classList.remove('hidden');
+        }
+    });
+
+    // Handle buy/sell button selection
+    buyBtn.addEventListener('click', function() {
+        buyBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        buyBtn.classList.add('bg-green-700', 'ring-2');
+        sellBtn.classList.remove('bg-red-700', 'ring-2');
+        sellBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        sideInput.value = 'buy';
+    });
+
+    sellBtn.addEventListener('click', function() {
+        sellBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        sellBtn.classList.add('bg-red-700', 'ring-2');
+        buyBtn.classList.remove('bg-green-700', 'ring-2');
+        buyBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        sideInput.value = 'sell';
+    });
+
+    // Update currency display based on trading pair
+    tradingPairSelect.addEventListener('change', function() {
+        currencySpan.textContent = this.value.split('/')[0];
+    });
+
+    // Form submission
+    orderForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!sideInput.value) {
+            alert('Please select Buy or Sell');
+            return;
+        }
+        // Add your order submission logic here
+        console.log('Order submitted:', {
+            trading_pair: tradingPairSelect.value,
+            order_type: orderTypeSelect.value,
+            side: sideInput.value,
+            amount: document.getElementById('amount').value,
+            price: document.getElementById('price').value
+        });
+    });
+
+    // Simulated order book updates
+    function updateOrderBook() {
+        const orderBook = document.getElementById('orderBook');
+        // Add your order book update logic here
+        orderBook.innerHTML = `
+            <div class="space-y-1">
+                <div class="flex justify-between text-red-400">
+                    <span>45,123.45</span>
+                    <span>0.5432 BTC</span>
+                </div>
+                <div class="flex justify-between text-red-400">
+                    <span>45,122.30</span>
+                    <span>1.2345 BTC</span>
+                </div>
+                <div class="flex justify-between text-green-400">
+                    <span>45,120.15</span>
+                    <span>0.8765 BTC</span>
+                </div>
+                <div class="flex justify-between text-green-400">
+                    <span>45,119.00</span>
+                    <span>2.1098 BTC</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Simulated recent trades updates
+    function updateRecentTrades() {
+        const recentTrades = document.getElementById('recentTrades');
+        // Add your recent trades update logic here
+        recentTrades.innerHTML = `
+            <div class="space-y-1">
+                <div class="flex justify-between">
+                    <span class="text-green-400">45,121.75</span>
+                    <span>0.3456 BTC</span>
+                    <span class="text-gray-500">12:45:32</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-red-400">45,120.90</span>
+                    <span>0.6789 BTC</span>
+                    <span class="text-gray-500">12:45:28</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-green-400">45,120.15</span>
+                    <span>1.2345 BTC</span>
+                    <span class="text-gray-500">12:45:25</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Initial updates
+    updateOrderBook();
+    updateRecentTrades();
+
+    // Periodic updates
+    setInterval(updateOrderBook, 5000);
+    setInterval(updateRecentTrades, 5000);
+});
+</script>
+{% endblock %}
+{% endblock %}

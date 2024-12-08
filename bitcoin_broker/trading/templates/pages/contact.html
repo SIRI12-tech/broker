@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Us - Bitcoin Broker{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-900 mb-8">Contact Us</h1>
+        
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="p-8">
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                        <input type="text" name="name" id="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" id="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
+                        <select name="subject" id="subject" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Select a subject</option>
+                            <option value="general">General Inquiry</option>
+                            <option value="support">Technical Support</option>
+                            <option value="account">Account Issues</option>
+                            <option value="trading">Trading Questions</option>
+                            <option value="security">Security Concerns</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-700">Message</label>
+                        <textarea name="message" id="message" rows="6" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Customer Support</h3>
+                    <div class="space-y-3">
+                        <p class="flex items-center text-gray-600">
+                            <i class="fas fa-envelope w-5 text-blue-600"></i>
+                            <span class="ml-2">support@bitcoinbroker.com</span>
+                        </p>
+                        <p class="flex items-center text-gray-600">
+                            <i class="fas fa-phone w-5 text-blue-600"></i>
+                            <span class="ml-2">+1 (888) 123-4567</span>
+                        </p>
+                        <p class="flex items-center text-gray-600">
+                            <i class="fas fa-clock w-5 text-blue-600"></i>
+                            <span class="ml-2">24/7 Support</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Office Location</h3>
+                    <div class="space-y-3">
+                        <p class="flex items-center text-gray-600">
+                            <i class="fas fa-map-marker-alt w-5 text-blue-600"></i>
+                            <span class="ml-2">123 Trading Street<br>New York, NY 10001<br>United States</span>
+                        </p>
+                        <p class="flex items-center text-gray-600">
+                            <i class="fas fa-building w-5 text-blue-600"></i>
+                            <span class="ml-2">Monday - Friday<br>9:00 AM - 5:00 PM EST</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="divide-y divide-gray-200">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900">How can I get started with trading?</h3>
+                        <p class="mt-2 text-gray-600">Simply create an account, verify your identity, and deposit funds to start trading.</p>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900">What are your trading fees?</h3>
+                        <p class="mt-2 text-gray-600">Our trading fees are competitive and vary based on your trading volume. Visit our fees page for detailed information.</p>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900">How secure is my account?</h3>
+                        <p class="mt-2 text-gray-600">We implement industry-leading security measures including 2FA, encryption, and cold storage for your assets.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ - Bitcoin Broker{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-4xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h1>
+        
+        <div class="space-y-8">
+            <!-- Getting Started Section -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Getting Started</h2>
+                <div class="space-y-6">
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">How do I create an account?</h3>
+                            <p class="text-gray-600">
+                                Creating an account is simple. Click the "Sign Up" button, provide your email address, create a strong password, and complete the verification process. You'll need to verify your identity to comply with regulations before you can start trading.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">What documents do I need for verification?</h3>
+                            <p class="text-gray-600">
+                                You'll need to provide:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 mt-2">
+                                <li>Government-issued photo ID (passport or driver's license)</li>
+                                <li>Proof of address (utility bill or bank statement)</li>
+                                <li>A clear photo of yourself holding your ID</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trading Section -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Trading</h2>
+                <div class="space-y-6">
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">What cryptocurrencies can I trade?</h3>
+                            <p class="text-gray-600">
+                                We currently support trading for:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 mt-2">
+                                <li>Bitcoin (BTC)</li>
+                                <li>Ethereum (ETH)</li>
+                                <li>Binance Coin (BNB)</li>
+                                <li>Cardano (ADA)</li>
+                                <li>Dogecoin (DOGE)</li>
+                                <li>Ripple (XRP)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">What are the trading fees?</h3>
+                            <p class="text-gray-600">
+                                Our fee structure is tiered based on your 30-day trading volume:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 mt-2">
+                                <li>Under $50,000: 0.2% per trade</li>
+                                <li>$50,000 - $250,000: 0.15% per trade</li>
+                                <li>$250,000 - $1,000,000: 0.1% per trade</li>
+                                <li>Over $1,000,000: 0.05% per trade</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Section -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Security</h2>
+                <div class="space-y-6">
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">How secure is my account?</h3>
+                            <p class="text-gray-600">
+                                We implement multiple layers of security:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 mt-2">
+                                <li>Two-factor authentication (2FA)</li>
+                                <li>Cold storage for cryptocurrency assets</li>
+                                <li>SSL encryption for all data</li>
+                                <li>Regular security audits</li>
+                                <li>Advanced fraud detection</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">What should I do if I suspect unauthorized access?</h3>
+                            <p class="text-gray-600">
+                                If you suspect unauthorized access:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 mt-2">
+                                <li>Immediately change your password</li>
+                                <li>Enable 2FA if not already enabled</li>
+                                <li>Contact our support team</li>
+                                <li>Review your recent activity</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposits and Withdrawals -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Deposits and Withdrawals</h2>
+                <div class="space-y-6">
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">How can I deposit funds?</h3>
+                            <p class="text-gray-600">
+                                We support multiple deposit methods:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 mt-2">
+                                <li>Bank transfer (ACH/SEPA)</li>
+                                <li>Credit/debit card</li>
+                                <li>Cryptocurrency transfer</li>
+                                <li>Wire transfer</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">How long do withdrawals take?</h3>
+                            <p class="text-gray-600">
+                                Withdrawal times vary by method:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 mt-2">
+                                <li>Cryptocurrency: 1-2 network confirmations</li>
+                                <li>Bank transfer: 1-3 business days</li>
+                                <li>Wire transfer: 1-2 business days</li>
+                                <li>Card refund: 3-5 business days</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Support</h2>
+                <div class="space-y-6">
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">How can I contact support?</h3>
+                            <p class="text-gray-600">
+                                We offer multiple support channels:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 mt-2">
+                                <li>24/7 live chat support</li>
+                                <li>Email: support@bitcoinbroker.com</li>
+                                <li>Phone: +1 (888) 123-4567</li>
+                                <li>Support ticket system</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">What are your support hours?</h3>
+                            <p class="text-gray-600">
+                                Our support team is available:
+                            </p>
+                            <ul class="list-disc list-inside text-gray-600 mt-2">
+                                <li>Live chat: 24/7</li>
+                                <li>Phone support: Monday-Friday, 9 AM - 5 PM EST</li>
+                                <li>Email support: 24/7 with response within 24 hours</li>
+                                <li>Emergency support: 24/7 for account security issues</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

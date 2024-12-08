@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Market Overview - Nexus Broker{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Market Summary -->
+    <div class="bg-white rounded-lg shadow mb-8">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-2xl font-bold">Market Summary</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <span class="text-gray-600">Global Market Cap</span>
+                <div class="text-2xl font-bold" id="global-market-cap">$2.1T</div>
+            </div>
+            <div>
+                <span class="text-gray-600">24h Volume</span>
+                <div class="text-2xl font-bold" id="total-volume">$98.5B</div>
+            </div>
+            <div>
+                <span class="text-gray-600">BTC Dominance</span>
+                <div class="text-2xl font-bold" id="btc-dominance">48.2%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Sentiment -->
+    <div class="bg-white rounded-lg shadow mb-8">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-2xl font-bold">Market Sentiment</h2>
+        </div>
+        <div class="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+                <span class="text-gray-600">Fear & Greed Index</span>
+                <div class="text-2xl font-bold" id="fear-greed-value">65</div>
+                <span class="text-green-500">Greed</span>
+            </div>
+            <div>
+                <span class="text-gray-600">Trend Strength</span>
+                <div class="text-2xl font-bold" id="trend-strength">7.8</div>
+                <span class="text-green-500">Strong</span>
+            </div>
+            <div>
+                <span class="text-gray-600">Market Momentum</span>
+                <div class="text-2xl font-bold" id="market-momentum">6.5</div>
+                <span class="text-green-500">Bullish</span>
+            </div>
+            <div>
+                <span class="text-gray-600">Volatility Index</span>
+                <div class="text-2xl font-bold" id="volatility-index">25.4</div>
+                <span class="text-yellow-500">Moderate</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performers -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Cryptocurrency Top Performers -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/>
+                    </svg>
+                    Top Cryptocurrencies
+                </h3>
+            </div>
+            <div id="crypto-performers" class="divide-y divide-gray-200">
+                {% for asset in top_crypto %}
+                <div class="flex items-center justify-between p-4">
+                    <div>
+                        <span class="font-medium">{{ asset.symbol }}</span>
+                        <span class="text-gray-500 text-sm block">{{ asset.name }}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="block font-medium">${{ asset.current_price|floatformat:2 }}</span>
+                        <span class="{% if asset.price_change_percentage_24h >= 0 %}text-green-500{% else %}text-red-500{% endif %} text-sm">
+                            {% if asset.price_change_percentage_24h >= 0 %}+{% endif %}{{ asset.price_change_percentage_24h|floatformat:2 }}%
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Forex Top Performers -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                    </svg>
+                    Top Forex Pairs
+                </h3>
+            </div>
+            <div id="forex-performers" class="divide-y divide-gray-200">
+                {% for asset in top_forex %}
+                <div class="flex items-center justify-between p-4">
+                    <div>
+                        <span class="font-medium">{{ asset.symbol }}</span>
+                        <span class="text-gray-500 text-sm block">{{ asset.base_currency }}/{{ asset.quote_currency }}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="block font-medium">{{ asset.current_price|floatformat:4 }}</span>
+                        <span class="{% if asset.price_change_percentage_24h >= 0 %}text-green-500{% else %}text-red-500{% endif %} text-sm">
+                            {% if asset.price_change_percentage_24h >= 0 %}+{% endif %}{{ asset.price_change_percentage_24h|floatformat:2 }}%
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Stock Top Performers -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Top Stocks
+                </h3>
+            </div>
+            <div id="stock-performers" class="divide-y divide-gray-200">
+                {% for asset in top_stocks %}
+                <div class="flex items-center justify-between p-4">
+                    <div>
+                        <span class="font-medium">{{ asset.symbol }}</span>
+                        <span class="text-gray-500 text-sm block">{{ asset.exchange }}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="block font-medium">${{ asset.current_price|floatformat:2 }}</span>
+                        <span class="{% if asset.price_change_percentage_24h >= 0 %}text-green-500{% else %}text-red-500{% endif %} text-sm">
+                            {% if asset.price_change_percentage_24h >= 0 %}+{% endif %}{{ asset.price_change_percentage_24h|floatformat:2 }}%
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Market News -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-2xl font-bold">Market News</h2>
+        </div>
+        <div class="p-6">
+            <div class="space-y-6">
+                {% for news in market_news %}
+                <div class="flex items-start space-x-4">
+                    {% if news.image_url %}
+                    <img src="{{ news.image_url }}" alt="{{ news.title }}" class="w-24 h-24 object-cover rounded">
+                    {% endif %}
+                    <div>
+                        <h3 class="font-semibold text-lg">{{ news.title }}</h3>
+                        <p class="text-gray-600 mt-1">{{ news.summary }}</p>
+                        <div class="mt-2 flex items-center space-x-4">
+                            <span class="text-sm text-gray-500">{{ news.source }}</span>
+                            <span class="text-sm text-gray-500">{{ news.published_at|timesince }} ago</span>
+                            {% if news.sentiment %}
+                            <span class="px-2 py-1 text-sm rounded
+                                {% if news.sentiment == 'positive' %}bg-green-100 text-green-800
+                                {% elif news.sentiment == 'negative' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ news.sentiment|title }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+<script>
+function updateAssetCard(assetData, containerId) {
+    const priceChange = parseFloat(assetData.price_change_percentage_24h);
+    const priceColor = priceChange >= 0 ? 'text-green-500' : 'text-red-500';
+    const priceSign = priceChange >= 0 ? '+' : '';
+    
+    return `
+        <div class="flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0">
+            <div>
+                <span class="font-medium">${assetData.symbol}</span>
+                <span class="text-gray-500 text-sm block">${assetData.name || assetData.exchange || `${assetData.base_currency}/${assetData.quote_currency}`}</span>
+            </div>
+            <div class="text-right">
+                <span class="block font-medium">$${parseFloat(assetData.current_price).toFixed(2)}</span>
+                <span class="${priceColor} text-sm">${priceSign}${priceChange.toFixed(2)}%</span>
+            </div>
+        </div>
+    `;
+}
+
+function updateTopPerformers() {
+    const assetTypes = [
+        { type: 'crypto', container: 'crypto-performers' },
+        { type: 'forex', container: 'forex-performers' },
+        { type: 'stock', container: 'stock-performers' }
+    ];
+    
+    assetTypes.forEach(({ type, container }) => {
+        fetch(`/trading/api/top-performers?asset_type=${type}&limit=5`)
+            .then(response => response.json())
+            .then(data => {
+                const containerEl = document.getElementById(container);
+                if (containerEl) {
+                    containerEl.innerHTML = data.data
+                        .map(asset => updateAssetCard(asset, container))
+                        .join('');
+                }
+            })
+            .catch(error => console.error(`Error updating ${type} performers:`, error));
+    });
+}
+
+function updateMarketSummary() {
+    fetch('/trading/api/market-summary')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('global-market-cap').textContent = `$${data.global_market_cap}T`;
+            document.getElementById('total-volume').textContent = `$${data.total_volume}B`;
+            document.getElementById('btc-dominance').textContent = `${data.btc_dominance}%`;
+            
+            // Update sentiment indicators
+            document.getElementById('fear-greed-value').textContent = data.sentiment.fear_greed;
+            document.getElementById('trend-strength').textContent = data.sentiment.trend_strength.toFixed(2);
+            document.getElementById('market-momentum').textContent = data.sentiment.momentum.toFixed(2);
+            document.getElementById('volatility-index').textContent = data.sentiment.volatility.toFixed(2);
+        })
+        .catch(error => console.error('Error updating market summary:', error));
+}
+
+// Update market data every minute
+setInterval(() => {
+    updateTopPerformers();
+    updateMarketSummary();
+}, 60000);
+
+// Initial update
+document.addEventListener('DOMContentLoaded', () => {
+    updateTopPerformers();
+    updateMarketSummary();
+});
+</script>
+{% endblock %}

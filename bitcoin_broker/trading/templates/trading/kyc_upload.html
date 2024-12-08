@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload KYC Documents - Nexus Broker{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-6">Upload Verification Documents</h2>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="p-4 mb-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+        <form method="post" enctype="multipart/form-data" action="{% url 'trading:kyc_upload' %}">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <!-- Document Type -->
+                <div>
+                    <label for="{{ form.document_type.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Document Type
+                    </label>
+                    {{ form.document_type }}
+                    {% if form.document_type.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.document_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Document Number -->
+                <div>
+                    <label for="{{ form.document_number.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Document Number
+                    </label>
+                    {{ form.document_number }}
+                    {% if form.document_number.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.document_number.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Document File -->
+                <div>
+                    <label for="{{ form.document_file.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Document File
+                    </label>
+                    <div class="mt-1">
+                        {{ form.document_file }}
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Accepted formats: JPEG, PNG, PDF. Maximum file size: 5MB
+                    </p>
+                    {% if form.document_file.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.document_file.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end space-x-4">
+                <a href="{% url 'trading:kyc_status' %}"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Cancel
+                </a>
+                <button type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Upload Document
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-blue-800">Important Information</h3>
+                <div class="mt-2 text-sm text-blue-700">
+                    <ul class="list-disc pl-5 space-y-1">
+                        <li>Make sure your document is clearly visible and all text is readable</li>
+                        <li>Document should be valid and not expired</li>
+                        <li>All corners of the document should be visible in the image</li>
+                        <li>File size should not exceed 5MB</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,374 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Advanced Trading - Nexus Broker{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+  .glass-effect {
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  .hover-transform {
+    transition: transform 0.3s ease;
+  }
+  .hover-transform:hover {
+    transform: translateY(-4px);
+  }
+  .text-primary {
+    color: rgba(255, 255, 255, 0.95);
+  }
+  .text-secondary {
+    color: rgba(255, 255, 255, 0.85);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Asset Selection and Market Data -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-2 glass-effect rounded-xl shadow-xl p-6 hover-transform">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center space-x-4">
+                        <select id="asset-type" class="rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+                            <option value="crypto">Cryptocurrency</option>
+                            <option value="stock">Stocks</option>
+                            <option value="forex">Forex</option>
+                        </select>
+                        <select id="asset-symbol" class="rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+                            {% for asset in assets %}
+                                <option value="{{ asset.symbol }}">{{ asset.name }} ({{ asset.symbol }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-2xl font-bold text-primary" id="current-price">$0.00</p>
+                        <p class="text-sm text-secondary" id="price-change">0.00%</p>
+                    </div>
+                </div>
+                
+                <!-- TradingView Chart -->
+                <div id="tradingview-chart" class="h-96 mb-4"></div>
+                
+                <!-- Technical Indicators -->
+                <div class="grid grid-cols-4 gap-4 text-center">
+                    <div>
+                        <p class="text-sm text-secondary">RSI</p>
+                        <p class="font-semibold text-primary" id="rsi-value">0.00</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary">MACD</p>
+                        <p class="font-semibold text-primary" id="macd-value">0.00</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary">Volume</p>
+                        <p class="font-semibold text-primary" id="volume-value">0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-secondary">24h High/Low</p>
+                        <p class="font-semibold text-primary" id="high-low-value">0.00/0.00</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Form -->
+            <div class="glass-effect rounded-xl shadow-xl p-6 hover-transform">
+                <h3 class="text-lg font-semibold mb-4 text-primary">Place Order</h3>
+                <form id="order-form" class="space-y-4">
+                    <!-- Order Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-secondary">Order Type</label>
+                        <select id="order-type" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+                            <option value="market">Market Order</option>
+                            <option value="limit">Limit Order</option>
+                            <option value="stop_loss">Stop Loss</option>
+                            <option value="stop_limit">Stop Limit</option>
+                            <option value="trailing_stop">Trailing Stop</option>
+                        </select>
+                    </div>
+
+                    <!-- Buy/Sell Toggle -->
+                    <div>
+                        <label class="block text-sm font-medium text-secondary">Side</label>
+                        <div class="mt-1 flex rounded-md shadow-sm">
+                            <button type="button" id="buy-btn" class="w-1/2 py-2 px-4 text-sm font-medium rounded-l-md bg-green-600 text-white hover:bg-green-700 focus:outline-none">Buy</button>
+                            <button type="button" id="sell-btn" class="w-1/2 py-2 px-4 text-sm font-medium rounded-r-md bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none">Sell</button>
+                        </div>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div>
+                        <label class="block text-sm font-medium text-secondary">Quantity</label>
+                        <input type="number" id="quantity" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600" step="0.00000001">
+                    </div>
+
+                    <!-- Price (for limit orders) -->
+                    <div id="price-input" class="hidden">
+                        <label class="block text-sm font-medium text-secondary">Price</label>
+                        <input type="number" id="price" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600" step="0.00000001">
+                    </div>
+
+                    <!-- Stop Price (for stop orders) -->
+                    <div id="stop-price-input" class="hidden">
+                        <label class="block text-sm font-medium text-secondary">Stop Price</label>
+                        <input type="number" id="stop-price" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600" step="0.00000001">
+                    </div>
+
+                    <!-- Trailing Percentage (for trailing stop) -->
+                    <div id="trailing-percent-input" class="hidden">
+                        <label class="block text-sm font-medium text-secondary">Trailing %</label>
+                        <input type="number" id="trailing-percent" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600" step="0.01">
+                    </div>
+
+                    <!-- Order Total -->
+                    <div class="pt-4 border-t border-gray-600">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-secondary">Order Total</span>
+                            <span class="font-semibold text-primary" id="order-total">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-secondary">Fee</span>
+                            <span class="text-sm text-primary" id="order-fee">$0.00</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none">
+                        Place Order
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Trade Management Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Active Trades -->
+            <div class="glass-effect rounded-xl shadow-xl p-6 hover-transform">
+                <h3 class="text-xl font-semibold mb-3 text-primary">Active Trades</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-600">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Asset</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Side</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Entry Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Current Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">P/L</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-600" id="active-trades">
+                            <!-- Active trades will be populated here via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Trade History -->
+            <div class="glass-effect rounded-xl shadow-xl p-6 hover-transform">
+                <h3 class="text-xl font-semibold mb-3 text-primary">Trade History</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-600">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Asset</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Side</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Entry/Exit</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">P/L</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-secondary uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-600" id="trade-history">
+                            <!-- Trade history will be populated here via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Book and Recent Trades -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Order Book -->
+            <div class="glass-effect rounded-xl shadow-xl p-6 hover-transform">
+                <h3 class="text-lg font-semibold mb-4 text-primary">Order Book</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Asks -->
+                    <div>
+                        <h4 class="text-sm font-medium text-secondary mb-2">Asks</h4>
+                        <div id="asks" class="space-y-1"></div>
+                    </div>
+                    <!-- Bids -->
+                    <div>
+                        <h4 class="text-sm font-medium text-secondary mb-2">Bids</h4>
+                        <div id="bids" class="space-y-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Trades -->
+            <div class="glass-effect rounded-xl shadow-xl p-6 hover-transform">
+                <h3 class="text-lg font-semibold mb-4 text-primary">Recent Trades</h3>
+                <div id="recent-trades" class="space-y-2"></div>
+            </div>
+        </div>
+
+        <!-- Price Alerts -->
+        <div class="glass-effect rounded-xl shadow-xl p-6 mb-8 hover-transform">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-primary">Price Alerts</h3>
+                <button id="add-alert-btn" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
+                    Add Alert
+                </button>
+            </div>
+            <div id="price-alerts" class="space-y-4">
+                <!-- Price alerts will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Alert Modal -->
+<div id="alert-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full backdrop-blur-sm">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md glass-effect">
+        <h3 class="text-lg font-semibold mb-4 text-primary">Create Price Alert</h3>
+        <form id="alert-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-secondary">Alert Type</label>
+                <select id="alert-type" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600">
+                    <option value="price_above">Price Above</option>
+                    <option value="price_below">Price Below</option>
+                    <option value="price_change_pct">Price Change %</option>
+                    <option value="volume_above">Volume Above</option>
+                    <option value="rsi_above">RSI Above</option>
+                    <option value="rsi_below">RSI Below</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-secondary">Target Value</label>
+                <input type="number" id="alert-target" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-700 dark:border-gray-600" step="0.00000001">
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button" id="close-alert-modal" class="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-700 rounded-md hover:bg-gray-600">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
+                    Create Alert
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script src="{% static 'js/trade_management.js' %}"></script>
+<script>
+    // Initialize TradingView widget
+    new TradingView.widget({
+        "width": "100%",
+        "height": "100%",
+        "symbol": "BINANCE:BTCUSDT",
+        "interval": "D",
+        "timezone": "Etc/UTC",
+        "theme": "light",
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": "#f1f3f6",
+        "enable_publishing": false,
+        "hide_side_toolbar": false,
+        "allow_symbol_change": true,
+        "container_id": "tradingview-chart"
+    });
+
+    // Handle order type changes
+    document.getElementById('order-type').addEventListener('change', function(e) {
+        const type = e.target.value;
+        document.getElementById('price-input').className = 
+            (type === 'limit' || type === 'stop_limit') ? 'block' : 'hidden';
+        document.getElementById('stop-price-input').className = 
+            (type === 'stop_loss' || type === 'stop_limit') ? 'block' : 'hidden';
+        document.getElementById('trailing-percent-input').className = 
+            type === 'trailing_stop' ? 'block' : 'hidden';
+    });
+
+    // Handle buy/sell toggle
+    document.getElementById('buy-btn').addEventListener('click', function() {
+        this.className = this.className.replace('bg-gray-200 text-gray-700', 'bg-green-600 text-white');
+        document.getElementById('sell-btn').className = 
+            document.getElementById('sell-btn').className.replace('bg-red-600 text-white', 'bg-gray-200 text-gray-700');
+    });
+
+    document.getElementById('sell-btn').addEventListener('click', function() {
+        this.className = this.className.replace('bg-gray-200 text-gray-700', 'bg-red-600 text-white');
+        document.getElementById('buy-btn').className = 
+            document.getElementById('buy-btn').className.replace('bg-green-600 text-white', 'bg-gray-200 text-gray-700');
+    });
+
+    // Handle price alerts modal
+    document.getElementById('add-alert-btn').addEventListener('click', function() {
+        document.getElementById('alert-modal').className = 
+            document.getElementById('alert-modal').className.replace('hidden', 'block');
+    });
+
+    document.getElementById('close-alert-modal').addEventListener('click', function() {
+        document.getElementById('alert-modal').className = 
+            document.getElementById('alert-modal').className.replace('block', 'hidden');
+    });
+
+    // Handle form submissions
+    document.getElementById('order-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Add order submission logic here
+    });
+
+    document.getElementById('alert-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Add alert creation logic here
+    });
+
+    // Update market data
+    function updateMarketData() {
+        fetch(`/api/market-data/${document.getElementById('asset-symbol').value}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('current-price').textContent = `$${data.price}`;
+                document.getElementById('price-change').textContent = `${data.change_24h}%`;
+                document.getElementById('rsi-value').textContent = data.rsi;
+                document.getElementById('macd-value').textContent = data.macd;
+                document.getElementById('volume-value').textContent = data.volume;
+                document.getElementById('high-low-value').textContent = `${data.high}/${data.low}`;
+                updateOrderBook(data.orderbook);
+                updateRecentTrades(data.recent_trades);
+            })
+            .catch(console.error);
+    }
+
+    // Initialize and set update intervals
+    updateMarketData();
+    setInterval(updateMarketData, 5000);
+
+    // Handle asset type changes
+    document.getElementById('asset-type').addEventListener('change', function(e) {
+        // Update asset symbols based on selected type
+        fetch(`/api/assets/${e.target.value}/`)
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('asset-symbol');
+                select.innerHTML = data.map(asset => 
+                    `<option value="${asset.symbol}">${asset.name} (${asset.symbol})</option>`
+                ).join('');
+                updateMarketData();
+            })
+            .catch(console.error);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Investment Calculator - Nexus Broker{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Calculator Form -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-6">Investment Calculator</h3>
+                <form id="calculator-form" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Investment Type</label>
+                        <select id="investment-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="one-time">One-time Investment</option>
+                            <option value="recurring">Recurring Investment</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Initial Investment ($)</label>
+                        <input type="number" id="initial-investment" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div id="recurring-amount-container" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700">Monthly Contribution ($)</label>
+                        <input type="number" id="monthly-contribution" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Investment Period</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="number" id="investment-years" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <select id="period-unit" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="years">Years</option>
+                                <option value="months">Months</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Expected Annual Return (%)</label>
+                        <input type="number" id="expected-return" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" step="0.1">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Risk Level</label>
+                        <select id="risk-level" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="conservative">Conservative (4-6%)</option>
+                            <option value="moderate">Moderate (6-8%)</option>
+                            <option value="aggressive">Aggressive (8-10%)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Calculate
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="lg:col-span-2">
+            <!-- Summary -->
+            <div class="bg-white rounded-lg shadow p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-6">Investment Summary</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Investment</p>
+                        <p class="text-2xl font-bold text-gray-900" id="total-invested">$0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Total Return</p>
+                        <p class="text-2xl font-bold text-green-600" id="total-return">$0</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Final Amount</p>
+                        <p class="text-2xl font-bold text-blue-600" id="final-amount">$0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Growth Chart -->
+            <div class="bg-white rounded-lg shadow p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-4">Investment Growth</h3>
+                <div id="growth-chart" class="h-80"></div>
+            </div>
+
+            <!-- Breakdown -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">Investment Breakdown</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <div id="breakdown-chart" class="h-64"></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Principal Amount</p>
+                            <p class="text-lg font-semibold" id="principal-amount">$0</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Interest Earned</p>
+                            <p class="text-lg font-semibold text-green-600" id="interest-earned">$0</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Annual Return</p>
+                            <p class="text-lg font-semibold" id="annual-return">0%</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Monthly Contribution</p>
+                            <p class="text-lg font-semibold" id="monthly-amount">$0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+<script>
+    // Initialize charts
+    let growthChart, breakdownChart;
+
+    // Show/hide recurring amount based on investment type
+    document.getElementById('investment-type').addEventListener('change', function(e) {
+        const recurringContainer = document.getElementById('recurring-amount-container');
+        recurringContainer.className = e.target.value === 'recurring' ? 'block' : 'hidden';
+    });
+
+    // Risk level changes expected return
+    document.getElementById('risk-level').addEventListener('change', function(e) {
+        const returnInput = document.getElementById('expected-return');
+        switch(e.target.value) {
+            case 'conservative':
+                returnInput.value = '5.0';
+                break;
+            case 'moderate':
+                returnInput.value = '7.0';
+                break;
+            case 'aggressive':
+                returnInput.value = '9.0';
+                break;
+        }
+    });
+
+    // Calculator form submission
+    document.getElementById('calculator-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const initialInvestment = parseFloat(document.getElementById('initial-investment').value) || 0;
+        const monthlyContribution = parseFloat(document.getElementById('monthly-contribution').value) || 0;
+        const years = parseFloat(document.getElementById('investment-years').value) || 0;
+        const expectedReturn = parseFloat(document.getElementById('expected-return').value) || 0;
+        const isRecurring = document.getElementById('investment-type').value === 'recurring';
+        
+        calculateInvestment(initialInvestment, monthlyContribution, years, expectedReturn, isRecurring);
+    });
+
+    function calculateInvestment(initial, monthly, years, returnRate, isRecurring) {
+        const monthlyRate = returnRate / 100 / 12;
+        const totalMonths = years * 12;
+        let growthData = [];
+        let currentAmount = initial;
+        
+        for (let month = 0; month <= totalMonths; month++) {
+            growthData.push({
+                x: new Date().setMonth(new Date().getMonth() + month),
+                y: currentAmount.toFixed(2)
+            });
+            
+            if (isRecurring) {
+                currentAmount = currentAmount * (1 + monthlyRate) + monthly;
+            } else {
+                currentAmount = currentAmount * (1 + monthlyRate);
+            }
+        }
+
+        const totalInvested = initial + (isRecurring ? monthly * totalMonths : 0);
+        const finalAmount = currentAmount;
+        const totalReturn = finalAmount - totalInvested;
+
+        updateResults(totalInvested, totalReturn, finalAmount, growthData);
+    }
+
+    function updateResults(totalInvested, totalReturn, finalAmount, growthData) {
+        // Update summary numbers
+        document.getElementById('total-invested').textContent = formatCurrency(totalInvested);
+        document.getElementById('total-return').textContent = formatCurrency(totalReturn);
+        document.getElementById('final-amount').textContent = formatCurrency(finalAmount);
+        
+        // Update breakdown numbers
+        document.getElementById('principal-amount').textContent = formatCurrency(totalInvested);
+        document.getElementById('interest-earned').textContent = formatCurrency(totalReturn);
+        document.getElementById('annual-return').textContent = 
+            ((Math.pow(finalAmount/totalInvested, 1/document.getElementById('investment-years').value) - 1) * 100).toFixed(2) + '%';
+        document.getElementById('monthly-amount').textContent = 
+            formatCurrency(document.getElementById('investment-type').value === 'recurring' ? 
+                parseFloat(document.getElementById('monthly-contribution').value) : 0);
+
+        // Update growth chart
+        if (growthChart) {
+            growthChart.updateSeries([{
+                name: 'Portfolio Value',
+                data: growthData
+            }]);
+        } else {
+            const growthOptions = {
+                series: [{
+                    name: 'Portfolio Value',
+                    data: growthData
+                }],
+                chart: {
+                    type: 'area',
+                    height: 320
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth'
+                },
+                xaxis: {
+                    type: 'datetime'
+                },
+                yaxis: {
+                    labels: {
+                        formatter: function(value) {
+                            return '$' + value.toFixed(0);
+                        }
+                    }
+                },
+                tooltip: {
+                    x: {
+                        format: 'MMM yyyy'
+                    }
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.9,
+                        stops: [0, 100]
+                    }
+                }
+            };
+
+            growthChart = new ApexCharts(document.querySelector("#growth-chart"), growthOptions);
+            growthChart.render();
+        }
+
+        // Update breakdown chart
+        const breakdownData = {
+            series: [totalInvested, totalReturn],
+            labels: ['Principal', 'Returns']
+        };
+
+        if (breakdownChart) {
+            breakdownChart.updateSeries(breakdownData.series);
+        } else {
+            const breakdownOptions = {
+                series: breakdownData.series,
+                chart: {
+                    type: 'donut',
+                    height: 250
+                },
+                labels: breakdownData.labels,
+                colors: ['#3B82F6', '#10B981'],
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: {
+                            width: 200
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }]
+            };
+
+            breakdownChart = new ApexCharts(document.querySelector("#breakdown-chart"), breakdownOptions);
+            breakdownChart.render();
+        }
+    }
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(value);
+    }
+
+    // Initialize with default values
+    document.getElementById('risk-level').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

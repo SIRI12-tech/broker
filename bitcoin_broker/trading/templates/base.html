@@ -1,0 +1,773 @@
+{% load custom_filters %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a202c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{% block title %}Nexus Broker{% endblock %}</title>
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bitcoin': '#f7931a',
+                        'dark-blue': '#1a202c',
+                    },
+                    screens: {
+                        'xs': '475px',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <style>
+        :root {
+            --bitcoin-orange: #f7931a;
+            --dark-blue: #1a202c;
+            --light-orange: #fbd38d;
+        }
+        
+        .bg-dark-blue {
+            background-color: var(--dark-blue);
+        }
+        
+        .bg-bitcoin {
+            background-color: var(--bitcoin-orange);
+        }
+        
+        .text-bitcoin {
+            color: var(--bitcoin-orange);
+        }
+        
+        .hover\:text-bitcoin:hover {
+            color: var(--bitcoin-orange);
+        }
+        
+        .border-bitcoin {
+            border-color: var(--bitcoin-orange);
+        }
+        
+        .gradient-dark {
+            background: linear-gradient(180deg, var(--dark-blue) 0%, #2d3748 100%);
+        }
+        
+        .nav-glass {
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .price-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .price-up {
+            color: #48bb78;
+        }
+        
+        .price-down {
+            color: #f56565;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .price-card {
+            @apply flex items-center space-x-2 px-4 py-1 rounded-lg bg-opacity-20 bg-white backdrop-blur-sm;
+        }
+        .price {
+            @apply font-mono font-semibold;
+        }
+        .change {
+            @apply text-sm font-medium;
+        }
+        
+        .stat-card {
+            @apply bg-gray-800 rounded-xl p-6 text-center shadow-lg transform hover:scale-105 transition-transform duration-300;
+        }
+        .crypto-card {
+            @apply bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300;
+        }
+        .review-card {
+            @apply bg-gray-800 rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300;
+        }
+        .volume {
+            @apply text-gray-400;
+        }
+        
+        .crypto-ticker-container {
+            background: rgba(17, 24, 39, 0.4) !important;
+            backdrop-filter: blur(8px);
+            border-color: rgba(31, 41, 55, 0.4);
+        }
+        
+        .crypto-ticker {
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+        }
+        
+        .crypto-ticker-track {
+            display: inline-flex;
+            animation: ticker 30s linear infinite;
+        }
+        
+        .crypto-ticker-track:hover {
+            animation-play-state: paused;
+        }
+        
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .crypto-item .positive { color: #10B981; }
+        .crypto-item .negative { color: #EF4444; }
+        
+        /* Crypto Ticker */
+        .crypto-item {
+            min-width: max-content;
+            padding: 0 1rem;
+            white-space: nowrap;
+        }
+        
+        /* Price change colors */
+        .change.positive {
+            color: #10B981;
+        }
+        .change.negative {
+            color: #EF4444;
+        }
+
+        /* Gradient fade effect on edges */
+        .crypto-ticker-container::before,
+        .crypto-ticker-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            width: 50px;
+            height: 100%;
+            z-index: 2;
+        }
+
+        .crypto-ticker-container::before {
+            left: 0;
+            background: linear-gradient(to right, rgb(17, 24, 39), transparent);
+        }
+
+        .crypto-ticker-container::after {
+            right: 0;
+            background: linear-gradient(to left, rgb(17, 24, 39), transparent);
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-dark-blue text-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <!-- Logo and Brand -->
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="{% url 'trading:index' %}" class="flex items-center space-x-2">
+                            <img src="{% static 'images/crypto/btc.svg' %}" alt="Nexus Broker" class="w-8 h-8">
+                            <span class="text-white text-xl font-bold">Nexus Broker</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex md:items-center md:space-x-6">
+                    <a href="{% url 'trading:about' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">About</a>
+                    <a href="{% url 'trading:trading' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Trading</a>
+                    <a href="{% url 'trading:faq' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">FAQ</a>
+                    <a href="{% url 'trading:contact' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Contact</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'trading:dashboard' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Dashboard</a>
+                        <a href="{% url 'trading:logout' %}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-300">Logout</a>
+                    {% else %}
+                        <a href="{% url 'trading:login' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-all duration-300">Login</a>
+                        <a href="{% url 'trading:signup' %}" class="bg-bitcoin hover:bg-bitcoin-dark text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-300">Sign Up</a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Menu -->
+            <div id="mobile-menu" class="hidden md:hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="{% url 'trading:about' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">About</a>
+                    <a href="{% url 'trading:trading' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Trading</a>
+                    <a href="{% url 'trading:faq' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">FAQ</a>
+                    <a href="{% url 'trading:contact' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Contact</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'trading:dashboard' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Dashboard</a>
+                        <a href="{% url 'trading:logout' %}" class="bg-red-600 hover:bg-red-700 text-white block px-3 py-2 rounded-md text-base font-medium">Logout</a>
+                    {% else %}
+                        <a href="{% url 'trading:login' %}" class="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Login</a>
+                        <a href="{% url 'trading:signup' %}" class="bg-bitcoin hover:bg-bitcoin-dark text-white block px-3 py-2 rounded-md text-base font-medium">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Crypto Ticker -->
+    <div class="crypto-ticker-container border-t border-b">
+        <div class="crypto-ticker">
+            <div class="crypto-ticker-track flex space-x-8 py-3">
+                <!-- Crypto Assets -->
+                <div class="crypto-item flex items-center space-x-2">
+                    <img src="{% static 'images/crypto/btc.svg' %}" alt="Bitcoin" class="w-6 h-6">
+                    <div class="flex flex-col">
+                        <span class="font-semibold">BTC</span>
+                        <span class="price text-sm" data-crypto-price="BTC">$43,250.50</span>
+                    </div>
+                    <span class="change text-xs" data-crypto-change="BTC">+2.5%</span>
+                </div>
+                <div class="crypto-item flex items-center space-x-2">
+                    <img src="{% static 'images/crypto/eth.svg' %}" alt="Ethereum" class="w-6 h-6">
+                    <div class="flex flex-col">
+                        <span class="font-semibold">ETH</span>
+                        <span class="price text-sm" data-crypto-price="ETH">$2,285.75</span>
+                    </div>
+                    <span class="change text-xs" data-crypto-change="ETH">+3.2%</span>
+                </div>
+                <!-- Stock Assets -->
+                <div class="crypto-item flex items-center space-x-2">
+                    <i class="fab fa-meta text-blue-400 w-6 h-6 flex items-center justify-center"></i>
+                    <div class="flex flex-col">
+                        <span class="font-semibold">META</span>
+                        <span class="price text-sm" data-stock-price="META">$485.90</span>
+                    </div>
+                    <span class="change text-xs positive" data-stock-change="META">+1.8%</span>
+                </div>
+                <div class="crypto-item flex items-center space-x-2">
+                    <i class="fab fa-amazon text-orange-400 w-6 h-6 flex items-center justify-center"></i>
+                    <div class="flex flex-col">
+                        <span class="font-semibold">AMZN</span>
+                        <span class="price text-sm" data-stock-price="AMZN">$178.25</span>
+                    </div>
+                    <span class="change text-xs positive" data-stock-change="AMZN">+2.1%</span>
+                </div>
+                <div class="crypto-item flex items-center space-x-2">
+                    <i class="fas fa-car text-red-500 w-6 h-6 flex items-center justify-center"></i>
+                    <div class="flex flex-col">
+                        <span class="font-semibold">TSLA</span>
+                        <span class="price text-sm" data-stock-price="TSLA">$195.70</span>
+                    </div>
+                    <span class="change text-xs negative" data-stock-change="TSLA">-0.9%</span>
+                </div>
+                <!-- More Crypto -->
+                <div class="crypto-item flex items-center space-x-2">
+                    <img src="{% static 'images/crypto/sol.svg' %}" alt="Solana" class="w-6 h-6">
+                    <div class="flex flex-col">
+                        <span class="font-semibold">SOL</span>
+                        <span class="price text-sm" data-crypto-price="SOL">$125.80</span>
+                    </div>
+                    <span class="change text-xs" data-crypto-change="SOL">+5.7%</span>
+                </div>
+                <div class="crypto-item flex items-center space-x-2">
+                    <img src="{% static 'images/crypto/ada.svg' %}" alt="Cardano" class="w-6 h-6">
+                    <div class="flex flex-col">
+                        <span class="font-semibold">ADA</span>
+                        <span class="price text-sm" data-crypto-price="ADA">$0.58</span>
+                    </div>
+                    <span class="change text-xs" data-crypto-change="ADA">+2.8%</span>
+                </div>
+                <!-- More Stocks -->
+                <div class="crypto-item flex items-center space-x-2">
+                    <i class="fab fa-apple text-gray-300 w-6 h-6 flex items-center justify-center"></i>
+                    <div class="flex flex-col">
+                        <span class="font-semibold">AAPL</span>
+                        <span class="price text-sm" data-stock-price="AAPL">$175.45</span>
+                    </div>
+                    <span class="change text-xs positive" data-stock-change="AAPL">+1.5%</span>
+                </div>
+                <div class="crypto-item flex items-center space-x-2">
+                    <i class="fas fa-microchip text-green-500 w-6 h-6 flex items-center justify-center"></i>
+                    <div class="flex flex-col">
+                        <span class="font-semibold">NVDA</span>
+                        <span class="price text-sm" data-stock-price="NVDA">$890.30</span>
+                    </div>
+                    <span class="change text-xs positive" data-stock-change="NVDA">+4.2%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateAllPrices() {
+            // Update crypto prices
+            fetch('/get_crypto_prices/')
+                .then(response => response.json())
+                .then(data => {
+                    Object.entries(data).forEach(([symbol, info]) => {
+                        const priceElements = document.querySelectorAll(`[data-crypto-price="${symbol}"]`);
+                        const changeElements = document.querySelectorAll(`[data-crypto-change="${symbol}"]`);
+                        
+                        priceElements.forEach(element => {
+                            element.textContent = new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }).format(info.price);
+                        });
+
+                        changeElements.forEach(element => {
+                            const change = info.price_change_24h;
+                            element.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+                            element.className = `change text-xs ${change >= 0 ? 'positive' : 'negative'}`;
+                        });
+                    });
+                })
+                .catch(error => console.error('Error fetching crypto prices:', error));
+
+            // Update stock prices (placeholder for now)
+            const stockPrices = {
+                'META': { price: 485.90, change: 1.8 },
+                'AMZN': { price: 178.25, change: 2.1 },
+                'TSLA': { price: 195.70, change: -0.9 },
+                'AAPL': { price: 175.45, change: 1.5 },
+                'NVDA': { price: 890.30, change: 4.2 }
+            };
+
+            Object.entries(stockPrices).forEach(([symbol, info]) => {
+                const priceElement = document.querySelector(`[data-stock-price="${symbol}"]`);
+                const changeElement = document.querySelector(`[data-stock-change="${symbol}"]`);
+                
+                if (priceElement) {
+                    priceElement.textContent = new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD',
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(info.price);
+                }
+                
+                if (changeElement) {
+                    changeElement.textContent = `${info.change >= 0 ? '+' : ''}${info.change.toFixed(2)}%`;
+                    changeElement.className = `change text-xs ${info.change >= 0 ? 'positive' : 'negative'}`;
+                }
+            });
+        }
+
+        // Update prices immediately and then every 30 seconds
+        updateAllPrices();
+        setInterval(updateAllPrices, 30000);
+
+        // Duplicate ticker items for smooth infinite scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const track = document.querySelector('.crypto-ticker-track');
+            const items = track.innerHTML;
+            track.innerHTML = items + items; // Duplicate content
+        });
+    </script>
+
+    <!-- Content -->
+    <div class="pt-16">
+        {% if messages %}
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+            {% for message in messages %}
+            <div class="rounded-md p-4 mb-4 {% if message.tags == 'success' %}bg-green-900 text-green-200{% elif message.tags == 'error' %}bg-red-900 text-red-200{% else %}bg-blue-900 text-blue-200{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+
+        <!-- TradingView Widget JavaScript -->
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        
+        <!-- Base Scripts -->
+        <script>
+            // Initialize AOS
+            AOS.init({
+                duration: 800,
+                once: true
+            });
+
+            // Initialize TradingView Widget
+            let widget;
+            function initTradingViewWidget() {
+                const chartContainer = document.getElementById('tradingview_chart');
+                if (chartContainer) {
+                    widget = new TradingView.widget({
+                        "width": "100%",
+                        "height": "100%",
+                        "symbol": "BINANCE:BTCUSDT",
+                        "interval": "D",
+                        "timezone": "Etc/UTC",
+                        "theme": "dark",
+                        "style": "1",
+                        "locale": "en",
+                        "toolbar_bg": "#1a202c",
+                        "enable_publishing": false,
+                        "hide_side_toolbar": false,
+                        "allow_symbol_change": true,
+                        "container_id": "tradingview_chart",
+                        "hide_volume": false,
+                        "studies": [
+                            "RSI@tv-basicstudies",
+                            "MASimple@tv-basicstudies"
+                        ]
+                    });
+                }
+            }
+
+            // Initialize chart when DOM is loaded
+            document.addEventListener('DOMContentLoaded', initTradingViewWidget);
+        </script>
+
+        {% block extra_js %}
+        {% endblock %}
+    </div>
+
+    <!-- Main Stats Section -->
+    <div class="bg-gradient-to-r from-gray-900 to-gray-800 py-8 mb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="stat-card">
+                    <i class="fas fa-users text-3xl text-bitcoin-orange mb-2"></i>
+                    <h3 class="text-2xl font-bold">1M+</h3>
+                    <p class="text-gray-400">Active Users</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-globe-americas text-3xl text-bitcoin-orange mb-2"></i>
+                    <h3 class="text-2xl font-bold">150+</h3>
+                    <p class="text-gray-400">Countries Served</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-chart-line text-3xl text-bitcoin-orange mb-2"></i>
+                    <h3 class="text-2xl font-bold">$10B+</h3>
+                    <p class="text-gray-400">Trading Volume</p>
+                </div>
+            </div>
+
+            <!-- Cryptocurrency Price Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div id="btc-price" class="crypto-card">
+                    <div class="flex items-center mb-2">
+                        <img src="{% static 'images/crypto/btc.svg' %}" alt="Bitcoin" class="w-8 h-8 mr-2">
+                        <span class="font-bold">Bitcoin</span>
+                    </div>
+                    <span class="price text-xl" data-crypto-price="BTC"></span>
+                    <span class="change" data-crypto-change="BTC"></span>
+                    <div class="text-sm text-gray-400 mt-2">
+                        <span>Vol: </span><span class="volume"></span>
+                    </div>
+                </div>
+                <div id="eth-price" class="crypto-card">
+                    <div class="flex items-center mb-2">
+                        <img src="{% static 'images/crypto/eth.svg' %}" alt="Ethereum" class="w-8 h-8 mr-2">
+                        <span class="font-bold">Ethereum</span>
+                    </div>
+                    <span class="price text-xl" data-crypto-price="ETH"></span>
+                    <span class="change" data-crypto-change="ETH"></span>
+                    <div class="text-sm text-gray-400 mt-2">
+                        <span>Vol: </span><span class="volume"></span>
+                    </div>
+                </div>
+                <div id="xrp-price" class="crypto-card">
+                    <div class="flex items-center mb-2">
+                        <img src="{% static 'images/crypto/xrp.svg' %}" alt="XRP" class="w-8 h-8 mr-2">
+                        <span class="font-bold">XRP</span>
+                    </div>
+                    <span class="price text-xl" data-crypto-price="XRP"></span>
+                    <span class="change" data-crypto-change="XRP"></span>
+                    <div class="text-sm text-gray-400 mt-2">
+                        <span>Vol: </span><span class="volume"></span>
+                    </div>
+                </div>
+                <div id="sol-price" class="crypto-card">
+                    <div class="flex items-center mb-2">
+                        <img src="{% static 'images/crypto/sol.svg' %}" alt="Solana" class="w-8 h-8 mr-2">
+                        <span class="font-bold">Solana</span>
+                    </div>
+                    <span class="price text-xl" data-crypto-price="SOL"></span>
+                    <span class="change" data-crypto-change="SOL"></span>
+                    <div class="text-sm text-gray-400 mt-2">
+                        <span>Vol: </span><span class="volume"></span>
+                    </div>
+                </div>
+                <div id="ada-price" class="crypto-card">
+                    <div class="flex items-center mb-2">
+                        <img src="{% static 'images/crypto/ada.svg' %}" alt="Cardano" class="w-8 h-8 mr-2">
+                        <span class="font-bold">Cardano</span>
+                    </div>
+                    <span class="price text-xl" data-crypto-price="ADA"></span>
+                    <span class="change" data-crypto-change="ADA"></span>
+                    <div class="text-sm text-gray-400 mt-2">
+                        <span>Vol: </span><span class="volume"></span>
+                    </div>
+                </div>
+                <div id="dot-price" class="crypto-card">
+                    <div class="flex items-center mb-2">
+                        <img src="{% static 'images/crypto/dot.svg' %}" alt="Polkadot" class="w-8 h-8 mr-2">
+                        <span class="font-bold">Polkadot</span>
+                    </div>
+                    <span class="price text-xl" data-crypto-price="DOT"></span>
+                    <span class="change" data-crypto-change="DOT"></span>
+                    <div class="text-sm text-gray-400 mt-2">
+                        <span>Vol: </span><span class="volume"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Reviews Section -->
+    <div class="container mx-auto px-4 mb-12">
+        <h2 class="text-2xl font-bold mb-6 text-center">What Our Users Say</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="review-card">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-user-circle text-gray-400 text-4xl"></i>
+                    <div class="ml-4">
+                        <h4 class="font-bold">Sarah Johnson</h4>
+                        <div class="text-bitcoin-orange">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-300">"The best trading platform I've used. The interface is intuitive and the real-time updates are incredibly helpful."</p>
+            </div>
+            <div class="review-card">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-user-circle text-gray-400 text-4xl"></i>
+                    <div class="ml-4">
+                        <h4 class="font-bold">Michael Chen</h4>
+                        <div class="text-bitcoin-orange">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-300">"Excellent security features and the customer support is outstanding. Trading has never been easier!"</p>
+            </div>
+            <div class="review-card">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-user-circle text-gray-400 text-4xl"></i>
+                    <div class="ml-4">
+                        <h4 class="font-bold">Emma Davis</h4>
+                        <div class="text-bitcoin-orange">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-300">"The analytics tools are fantastic. I've significantly improved my trading strategy using Nexus Broker."</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark-blue border-t border-gray-800 mt-12">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-coins text-bitcoin text-2xl"></i>
+                        <span class="text-white text-xl font-bold">Nexus Broker</span>
+                    </div>
+                    <p class="mt-4 text-gray-400">Your trusted platform for cryptocurrency trading.</p>
+                </div>
+                <div class="col-span-1">
+                    <h3 class="text-white font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'trading:about' %}" class="text-gray-400 hover:text-white transition-colors duration-300">About</a></li>
+                        <li><a href="{% url 'trading:trading' %}" class="text-gray-400 hover:text-white transition-colors duration-300">Trading</a></li>
+                        <li><a href="{% url 'trading:faq' %}" class="text-gray-400 hover:text-white transition-colors duration-300">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-span-1">
+                    <h3 class="text-white font-semibold mb-4">Legal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'trading:privacy' %}" class="text-gray-400 hover:text-white transition-colors duration-300">Privacy Policy</a></li>
+                        <li><a href="{% url 'trading:terms' %}" class="text-gray-400 hover:text-white transition-colors duration-300">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-span-1">
+                    <h3 class="text-white font-semibold mb-4">Contact</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'trading:contact' %}" class="text-gray-400 hover:text-white transition-colors duration-300">Contact Us</a></li>
+                        <li><span class="text-gray-400">support@nexusbroker.com</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
+                <p>&copy; {% now "Y" %} Nexus Broker. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            const isMenuHidden = mobileMenu.classList.contains('hidden');
+            mobileMenu.classList.toggle('hidden');
+            
+            // Update button icon
+            const svg = mobileMenuButton.querySelector('svg');
+            if (isMenuHidden) {
+                // Show close icon
+                svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 12h16M6 18h16"></path>';
+            } else {
+                // Show menu icon
+                svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+            }
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                mobileMenu.classList.add('hidden');
+                const svg = mobileMenuButton.querySelector('svg');
+                svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+            }
+        });
+
+        // Function to format price with commas and 2 decimal places
+        function formatPrice(price) {
+            return new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(price);
+        }
+
+        // Function to format percentage change
+        function formatChange(change) {
+            const formatted = change.toFixed(2);
+            return change >= 0 ? `+${formatted}%` : `${formatted}%`;
+        }
+
+        // Function to update crypto prices
+        function updateCryptoPrices() {
+            fetch('/get_crypto_prices/')
+                .then(response => response.json())
+                .then(data => {
+                    const prices = data.prices;
+                    Object.keys(prices).forEach(symbol => {
+                        const crypto = prices[symbol];
+                        
+                        // Update price
+                        const priceElement = document.querySelector(`[data-crypto-price="${symbol}"]`);
+                        if (priceElement) {
+                            priceElement.textContent = `$${formatPrice(crypto.price)}`;
+                        }
+                        
+                        // Update change percentage
+                        const changeElement = document.querySelector(`[data-crypto-change="${symbol}"]`);
+                        if (changeElement) {
+                            const changeText = formatChange(crypto.change_24h);
+                            changeElement.textContent = changeText;
+                            changeElement.classList.remove('text-green-500', 'text-red-500');
+                            changeElement.classList.add(crypto.change_24h >= 0 ? 'text-green-500' : 'text-red-500');
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching crypto prices:', error));
+        }
+
+        // Update prices every 30 seconds
+        updateCryptoPrices();  // Initial update
+        setInterval(updateCryptoPrices, 30000);  // Update every 30 seconds
+
+        function updateCryptoTickerPrices() {
+            fetch('/get_crypto_prices/')
+                .then(response => response.json())
+                .then(data => {
+                    Object.entries(data).forEach(([symbol, info]) => {
+                        const priceElements = document.querySelectorAll(`[data-crypto-price="${symbol}"]`);
+                        const changeElements = document.querySelectorAll(`[data-crypto-change="${symbol}"]`);
+                        
+                        priceElements.forEach(element => {
+                            element.textContent = new Intl.NumberFormat('en-US', {
+                                style: 'currency',
+                                currency: 'USD',
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }).format(info.price);
+                        });
+
+                        changeElements.forEach(element => {
+                            const change = info.price_change_24h;
+                            element.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+                            element.className = `change text-xs ${change >= 0 ? 'positive' : 'negative'}`;
+                        });
+                    });
+                })
+                .catch(error => console.error('Error fetching crypto prices:', error));
+        }
+
+        // Update prices immediately and then every 30 seconds
+        updateCryptoTickerPrices();
+        setInterval(updateCryptoTickerPrices, 30000);
+
+        // Duplicate ticker items for smooth infinite scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            const track = document.querySelector('.crypto-ticker-track');
+            const items = track.innerHTML;
+            track.innerHTML = items + items; // Duplicate content
+        });
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

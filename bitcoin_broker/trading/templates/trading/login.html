@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - Nexus Broker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .glass-effect {
+        background: rgba(17, 24, 39, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .text-primary {
+        color: rgba(255, 255, 255, 0.95);
+    }
+    .text-secondary {
+        color: rgba(255, 255, 255, 0.85);
+    }
+    .bitcoin-gradient {
+        background: linear-gradient(135deg, #f7931a 0%, #ff9a44 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        <div class="glass-effect rounded-xl shadow-2xl p-8">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-primary">Welcome Back</h2>
+                <p class="mt-2 text-secondary">Sign in to your Nexus Broker account</p>
+            </div>
+
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-900/50 text-red-300{% else %}bg-green-900/50 text-green-300{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form class="mt-8 space-y-6" method="POST">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    <div>
+                        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-primary">Username or Email</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        <p class="mt-2 text-sm text-red-300">
+                            {{ form.username.errors.0 }}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-primary">Password</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                        <p class="mt-2 text-sm text-red-300">
+                            {{ form.password.errors.0 }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-6">
+                    <div class="flex items-center">
+                        <input id="remember_me" name="remember_me" type="checkbox" 
+                            class="h-4 w-4 bg-gray-800 border-gray-700 rounded text-bitcoin focus:ring-bitcoin">
+                        <label for="remember_me" class="ml-2 block text-sm text-secondary">Remember me</label>
+                    </div>
+
+                    <div class="text-sm">
+                        <a href="{% url 'trading:password_reset' %}" class="text-bitcoin hover:text-bitcoin/80">
+                            Forgot your password?
+                        </a>
+                    </div>
+                </div>
+
+                <button type="submit" 
+                    class="w-full py-3 bitcoin-gradient text-white rounded-lg hover:opacity-90 
+                    transition-all duration-300 shadow-lg font-medium mt-6">
+                    Sign In
+                </button>
+
+                <div class="text-center mt-4">
+                    <p class="text-sm text-secondary">
+                        Don't have an account? 
+                        <a href="{% url 'trading:signup' %}" class="text-bitcoin hover:text-bitcoin/80 font-medium">
+                            Sign up now
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

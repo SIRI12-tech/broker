@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - Nexus Broker{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-6 text-center">Create Your Account</h2>
+    
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'error' %}bg-red-100 border-red-400 text-red-700{% else %}bg-green-100 border-green-400 text-green-700{% endif %} px-4 py-3 rounded relative" role="alert">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <div>
+            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.username.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <label for="phone_number" class="block text-sm font-medium text-gray-700">Phone Number</label>
+            {{ form.phone_number }}
+            {% if form.phone_number.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.phone_number.errors.0 }}</p>
+            {% endif %}
+            <p class="mt-1 text-sm text-gray-500">
+                Enter your phone number with country code (e.g., +1234567890)
+            </p>
+        </div>
+
+        <div>
+            <label for="password1" class="block text-sm font-medium text-gray-700">Password</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.password1.errors.0 }}</p>
+            {% endif %}
+            <p class="mt-1 text-sm text-gray-500">
+                Your password must contain at least 8 characters.
+            </p>
+        </div>
+
+        <div>
+            <label for="password2" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.password2.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div class="flex items-center">
+            {{ form.accept_terms }}
+            <label for="accept_terms" class="ml-2 block text-sm text-gray-900">
+                I agree to the <a href="{% url 'trading:terms' %}" class="text-blue-600 hover:text-blue-500">Terms of Service</a>
+                and <a href="{% url 'trading:privacy' %}" class="text-blue-600 hover:text-blue-500">Privacy Policy</a>
+            </label>
+            {% if form.accept_terms.errors %}
+            <p class="mt-1 text-sm text-red-600">{{ form.accept_terms.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <button type="submit"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Create Account
+            </button>
+        </div>
+    </form>
+
+    <div class="mt-6 text-center">
+        <p class="text-sm text-gray-600">
+            Already have an account? 
+            <a href="{% url 'trading:login' %}" class="font-medium text-blue-600 hover:text-blue-500">
+                Login here
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}

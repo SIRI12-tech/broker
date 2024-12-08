@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        .rejection-reason {
+            background-color: #fff3f3;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ logo_url }}" alt="Nexus Broker" class="logo">
+        <h1>KYC Document Update Required</h1>
+    </div>
+    
+    <div class="content">
+        <p>Dear {{ user.get_full_name|default:user.username }},</p>
+        
+        <p>We have reviewed your KYC document ({{ document_type }}) and unfortunately, we could not verify it at this time.</p>
+        
+        <div class="rejection-reason">
+            <strong>Reason for rejection:</strong>
+            <p>{{ rejection_reason }}</p>
+        </div>
+        
+        <p>Please submit a new document addressing the following:</p>
+        <ul>
+            <li>Make sure the document is clearly visible and not blurry</li>
+            <li>All four corners of the document should be visible</li>
+            <li>The document should be valid and not expired</li>
+            <li>All text should be clearly readable</li>
+        </ul>
+        
+        <a href="{{ kyc_url }}" class="button">Submit New Document</a>
+        
+        <p>If you need assistance, our support team is available 24/7 to help you with the verification process.</p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated message, please do not reply to this email.</p>
+        <p>If you have any questions, please contact our support team.</p>
+        <p>&copy; {% now "Y" %} Nexus Broker. All rights reserved.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,130 @@
+/* Custom Admin Styles */
+
+/* Status Colors */
+.status-pending {
+    color: #f59e0b;
+}
+
+.status-verified {
+    color: #10b981;
+}
+
+.status-rejected {
+    color: #ef4444;
+}
+
+/* Document View Button */
+.button {
+    display: inline-block;
+    padding: 6px 12px;
+    background-color: #3b82f6;
+    color: white !important;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.button:hover {
+    background-color: #2563eb;
+}
+
+/* Action Buttons */
+.action-verify {
+    background-color: #10b981 !important;
+    border-color: #059669 !important;
+}
+
+.action-reject {
+    background-color: #ef4444 !important;
+    border-color: #dc2626 !important;
+}
+
+/* Document Preview */
+.document-preview {
+    max-width: 300px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 4px;
+}
+
+/* Fieldset Styling */
+.module h2 {
+    background: #1e40af;
+    color: white;
+}
+
+/* List View Enhancements */
+#changelist-form .results {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#changelist-form .column-status_colored {
+    white-space: nowrap;
+}
+
+/* Form Field Styling */
+.form-row {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-row:last-child {
+    border-bottom: none;
+}
+
+/* Help Text */
+.help {
+    color: #6b7280;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Error Messages */
+.errornote {
+    background-color: #fee2e2;
+    border: 1px solid #ef4444;
+    color: #b91c1c;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Success Messages */
+.messagelist .success {
+    background-color: #d1fae5;
+    border: 1px solid #10b981;
+    color: #047857;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Filter Sidebar */
+#changelist-filter h2 {
+    background: #1e40af;
+    color: white;
+}
+
+#changelist-filter li.selected {
+    border-left: 3px solid #3b82f6;
+    padding-left: 10px;
+    margin-left: -13px;
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+    #changelist-form .results {
+        overflow-x: scroll;
+    }
+    
+    .form-row {
+        padding: 8px;
+    }
+    
+    .button {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+}
